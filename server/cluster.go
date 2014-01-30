@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"stripe-ctf.com/sqlcluster/log"
+	"sync"
 )
+
+var failoverLock sync.Mutex
 
 type ServerAddress struct {
 	Name             string `json:"name"`
@@ -66,6 +69,9 @@ func (c *Cluster) State() string {
 }
 
 func (c *Cluster) PerformFailover() {
+	failoverLock.Lock()
+	defer failoverLock.Unlock()
+
 	state := c.State()
 	if state != "secondary" {
 		log.Fatalf("Trying to fail over even though my state is %s", state)

@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	//"time"
 )
 
 type Client struct {
@@ -26,14 +27,19 @@ func NewClient() *Client {
 		client: &http.Client{
 			Transport: &http.Transport{
 				Dial: UnixDialer,
+				//ResponseHeaderTimeout: 10 * time.Millisecond,
 			},
 		},
 	}
 }
 
-func (s *Client) SafePost(connectionString, path string, reqB io.Reader) (io.Reader, error) {
+func (s *Client) GetHTTPClient() *http.Client {
+	return s.client
+}
+
+func (s *Client) SafePost(connectionString, path string, contentType string, reqB io.Reader) (io.Reader, error) {
 	url := connectionString + path
-	resp, err := s.client.Post(url, "application/octet-stream", reqB)
+	resp, err := s.client.Post(url, contentType, reqB)
 	if err != nil {
 		return nil, err
 	}
